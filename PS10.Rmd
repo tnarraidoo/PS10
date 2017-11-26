@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 10"
-author: "WRITE YOUR NAME(S) HERE"
+author: "Tasheena Narraidoo"
 date: "2017-11-28"
 output:
   html_document:
@@ -26,11 +26,15 @@ Please indicate who you collaborated with on this assignment:
 
 # Setup
 
-```{r}
+```{r, echo=FALSE}
+#load libraries
 library(tidyverse)
 library(broom)
 library(glmnet)
+```
 
+
+```{r}
 train <- read_csv("data/train.csv")
 test <- read_csv("data/test.csv")
 sample_submission <- read_csv("data/sample_submission.csv")
