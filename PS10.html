@@ -265,19 +265,24 @@ write.csv(lin_submission, &quot;linear_submission.csv&quot;)
 
 # compute rmsle for linear model
 # predict on train data
-lin_mod_train &lt;- predict(lin_mod, train)
+lin_mod_train &lt;- exp(predict(lin_mod, train))
 # calc rmsle using Metrics library
-rmsle(train$log_price_doc, lin_mod_train) # 0.01577062</code></pre>
-<pre><code>## [1] 0.01577062</code></pre>
+rmsle(train$price_doc, lin_mod_train) # 0.2534704</code></pre>
+<pre><code>## [1] 0.2534704</code></pre>
 <pre class="r"><code># 2. LASSO model
+
+#lambda inputs
+lambda_inputs &lt;- 10^seq(-2, 10, length = 100)
+# fit lasso 
+lasso_mod &lt;- glmnet(x=predictor_matrix_train, y=train$log_price_doc, alpha=1,lambda = lambda_inputs)
 
 # perform lasso cv to find optimal lambda
 lasso_cv &lt;- cv.glmnet(x=predictor_matrix_train, y=train$log_price_doc, alpha=1)
 lambda_opti &lt;- lasso_cv$lambda.min
-# fit lasso with optimal lambda
-lasso_mod &lt;- glmnet(x=predictor_matrix_train, y=train$log_price_doc, alpha=1, lambda = lambda_opti)
+
 # make prediction using test set
-lasso_pred &lt;- exp(predict(lasso_mod, predictor_matrix_test))
+lasso_pred &lt;- exp(predict(lasso_mod, predictor_matrix_test, s = lambda_opti))
+
 # prepare submission file
 lasso_submission &lt;- sample_submission %&gt;% 
   mutate(price_doc = lasso_pred) %&gt;% 
@@ -286,10 +291,10 @@ write.csv(lasso_submission, &quot;lasso_submission.csv&quot;)
 
 # compute rmsle for lasso model
 # predict on train data
-lasso_mod_train &lt;- predict(lasso_mod, predictor_matrix_train)
+lasso_mod_train &lt;- exp(predict(lasso_mod, predictor_matrix_train, s = lambda_opti))
 # calc rmsle using Metrics library
-rmsle(train$log_price_doc, lasso_mod_train) # 0.0284825</code></pre>
-<pre><code>## [1] 0.0284825</code></pre>
+rmsle(train$price_doc, lasso_mod_train) # 0.4541107</code></pre>
+<pre><code>## [1] 0.4541107</code></pre>
 <pre class="r"><code># plot lasso
 plot(lasso_cv)
 abline(v=log(lasso_cv$lambda.min), col=&quot;blue&quot;)</code></pre>
@@ -310,12 +315,12 @@ abline(v=log(lasso_cv$lambda.min), col=&quot;blue&quot;)</code></pre>
 <tbody>
 <tr class="odd">
 <td>lm</td>
-<td>0.0158</td>
+<td>0.253</td>
 <td>2.63</td>
 </tr>
 <tr class="even">
 <td>LASSO crossvalidated</td>
-<td>0.0285</td>
+<td>0.454</td>
 <td>0.419</td>
 </tr>
 </tbody>
